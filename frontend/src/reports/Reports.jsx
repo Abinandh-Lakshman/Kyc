@@ -3,6 +3,7 @@ import "./Reports.css";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import { autoTable } from "jspdf-autotable";
+import { API_BASE } from "./Adminfield";
 
 const Reports = () => {
   const [panInput, setPanInput] = useState("");
@@ -21,8 +22,9 @@ const Reports = () => {
     }
     try {
       setMatchedData(null); // clear old data while fetching
+      // --- FIX IS HERE ---
       const res = await fetch(
-        `http://localhost:5000/api/profiles/by-pan/${panInput}`
+        `${API_BASE}/api/profiles/by-pan/${panInput}` // <-- CORRECTED URL
       );
       const data = await res.json();
 

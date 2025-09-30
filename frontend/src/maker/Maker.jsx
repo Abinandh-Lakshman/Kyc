@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Maker.css";
+import { API_BASE } from "./Adminfield";
 
 const Maker = () => {
   const location = useLocation();
@@ -127,6 +128,7 @@ const Maker = () => {
   };
 
   // The final submission logic with server-side validation.
+  // Replace your entire handleSubmitAll function with this one
   const handleSubmitAll = async () => {
     // 1. Run full client-side validation on ALL sections first.
     let hasClientError = false;
@@ -156,8 +158,9 @@ const Maker = () => {
 
       if (profileIdFromReports) {
         // This is an UPDATE operation
+        // --- FIX IS HERE ---
         response = await fetch(
-          `http://localhost:5000/api/profiles/${profileIdFromReports}`,
+          `${API_BASE}/api/profiles/${profileIdFromReports}`, // Corrected URL
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -166,16 +169,19 @@ const Maker = () => {
         );
       } else {
         // This is a CREATE operation
-        response = await fetch("http://localhost:5000/api/profiles", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: body,
-        });
+        // --- FIX IS HERE ---
+        response = await fetch(
+          `${API_BASE}/api/profiles`, // Corrected URL
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: body,
+          }
+        );
       }
 
       // 3. Handle the server's response.
       if (!response.ok) {
-        // The server responded with an error (e.g., 409 Conflict for duplicate PAN)
         const errorData = await response.json();
         throw new Error(
           errorData.error || `Request failed with status ${response.status}`
@@ -193,12 +199,10 @@ const Maker = () => {
         },
       });
     } catch (err) {
-      // This single catch block handles network errors AND server validation errors gracefully.
       console.error("❌ Error submitting profile: ", err);
       alert(`❌ Submission Failed: ${err.message}`);
     }
   };
-
   const handleBack = () => {
     const idx = sections.indexOf(activeSection);
     if (idx > 0) setActiveSection(sections[idx - 1]);

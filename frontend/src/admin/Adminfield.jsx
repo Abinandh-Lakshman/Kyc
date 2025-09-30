@@ -6,7 +6,10 @@ import "./Adminfield.css";
 import { FaPlus, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 import { MdSave } from "react-icons/md";
 
-const API_BASE = "http://localhost:5000/api"; // ✅ backend server
+// By adding "export", we can use this variable in other files.
+// This line uses the Netlify variable if it exists, otherwise it falls back to your local URL.
+export const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"; // ✅ backend server
 
 const Adminfield = () => {
   const [activeSection, setActiveSection] = useState("A");

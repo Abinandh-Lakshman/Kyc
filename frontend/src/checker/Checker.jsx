@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Checker.css";
 
+import { API_BASE } from "./Adminfield";
 const Checker = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,10 +44,12 @@ const Checker = () => {
   };
 
   // 🚀 Submit → update backend first, then go to Reports
+  // Replace your handleSubmit function with this corrected version
   const handleSubmit = async () => {
     try {
       if (profileId) {
-        await fetch(`http://localhost:5000/api/profiles/${profileId}/verify`, {
+        // --- THE FIX IS ON THIS LINE ---
+        await fetch(`${API_BASE}/api/profiles/${profileId}/verify`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ verified: verifiedFields }),
