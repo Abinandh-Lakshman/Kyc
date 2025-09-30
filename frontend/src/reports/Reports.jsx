@@ -3,7 +3,7 @@ import "./Reports.css";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import { autoTable } from "jspdf-autotable";
-import { API_BASE } from "../admin/Adminfield"; // This is correct
+import { API_BASE } from "../admin/Adminfield";
 
 const Reports = () => {
   const [panInput, setPanInput] = useState("");

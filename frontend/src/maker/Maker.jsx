@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Maker.css";
-import { API_BASE } from "../admin/Adminfield"; // This is correct
+import { API_BASE } from "../admin/Adminfield";
 
 const Maker = () => {
   const location = useLocation();

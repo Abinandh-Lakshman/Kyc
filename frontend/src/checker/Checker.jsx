@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Checker.css";
 
-import { API_BASE } from "./Adminfield";
+import { API_BASE } from '../admin/Adminfield';
 const Checker = () => {
   const location = useLocation();
   const navigate = useNavigate();
