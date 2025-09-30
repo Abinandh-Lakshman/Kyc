@@ -3,7 +3,7 @@ import "./Reports.css";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import { autoTable } from "jspdf-autotable";
-import { API_BASE } from "./Adminfield";
+import { API_BASE } from "../admin/Adminfield"; // This is correct
 
 const Reports = () => {
   const [panInput, setPanInput] = useState("");
@@ -42,7 +42,6 @@ const Reports = () => {
       setMatchedData(null);
     }
   };
-  
 
   // --- Export handlers ---
   const exportExcel = () => {
