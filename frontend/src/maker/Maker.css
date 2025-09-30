@@ -1,0 +1,123 @@
+/* =====================
+   GLOBAL
+===================== */
+.checker-container {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: #f4f6fb; /* cool light background */
+  color: #1a237e; /* deep navy text */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =====================
+   HEADER
+===================== */
+.checker-header {
+  background: #ffffff;
+  padding: 16px 40px;
+  border-bottom: 1px solid #e1e4e8;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.checker-header h2 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: #1a237e; /* royal navy */
+  letter-spacing: 0.5px;
+}
+
+/* =====================
+   SIDEBAR BUTTONS
+===================== */
+.nav-btn {
+  background: #fff;
+  border: 1px solid #cfd6de;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  color: #1a237e;
+}
+
+.nav-btn:hover {
+  background: #e8eaf6; /* light indigo hover */
+  border-color: #3f51b5; /* primary border */
+  color: #3f51b5;
+}
+
+.nav-btn.active {
+  background: #3f51b5;
+  color: white;
+  border-color: #3f51b5;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(63, 81, 181, 0.25);
+}
+
+/* =====================
+   FORM 
+===================== */
+.form-group input:focus {
+  border-color: #673ab7; /* purple focus */
+  outline: none;
+  box-shadow: 0px 0px 0px 3px rgba(103, 58, 183, 0.2);
+}
+
+.error-msg {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #d32f2f; /* crimson errors */
+  font-style: italic;
+}
+
+/* =====================
+   NAVIGATION BUTTONS
+===================== */
+.nav-buttons button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+/* Back */
+.back-btn {
+  background: #f5f5f5;
+  color: #333;
+}
+.back-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Save (primary blue) */
+.save-btn {
+  background: #3f51b5;
+  color: #fff;
+}
+.save-btn:hover {
+  background: #303f9f;
+}
+
+/* Next (secondary purple) */
+.next-btn {
+  background: #673ab7;
+  color: #fff;
+}
+.next-btn:hover {
+  background: #5e35b1;
+}
+
+/* Finish (success green) */
+.finish-btn {
+  background: #00c853;
+  color: #fff;
+}
+.finish-btn:hover {
+  background: #00a844;
+}
