@@ -10,11 +10,9 @@ export const API_BASE =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const Adminfield = () => {
-  // ✅ FIX: Default section name updated
   const [activeSection, setActiveSection] = useState("Personal Information");
   const [searchQuery, setSearchQuery] = useState("");
   const [detailsCatalog, setDetailsCatalog] = useState([]);
-  // ✅ FIX: Key in previewData object updated for consistency
   const [previewData, setPreviewData] = useState({
     "Personal Information": [],
     "Bank Details": [],
@@ -27,7 +25,6 @@ const Adminfield = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
-  // ✅ FIX: Default chosen section updated
   const [chosenSection, setChosenSection] = useState("Personal Information");
   const [errorMessage, setErrorMessage] = useState("");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -114,11 +111,29 @@ const Adminfield = () => {
   const openModal = (field) => {
     setSelectedField(field.name);
     setChosenSection(activeSection);
+    setErrorMessage(""); // Clear previous errors when opening the modal
     setModalOpen(true);
   };
 
+  // ✅ FIX: This function now prevents assigning a field more than once.
   const confirmAssign = () => {
     if (selectedField && chosenSection) {
+      // Reset any previous error messages
+      setErrorMessage("");
+
+      // 1. Get all currently assigned fields from all sections into a single array.
+      const allAssignedFields = Object.values(previewData).flat();
+
+      // 2. Check if the selected field already exists in that list.
+      if (allAssignedFields.includes(selectedField)) {
+        // 3. If it exists, set an error message and stop the function.
+        setErrorMessage(
+          `Error: "${selectedField}" is already assigned to a section.`
+        );
+        return;
+      }
+
+      // If validation passes, proceed with the assignment.
       setPreviewData((prev) => {
         const updated = { ...prev };
         if (!updated[chosenSection].includes(selectedField)) {
@@ -126,6 +141,8 @@ const Adminfield = () => {
         }
         return updated;
       });
+
+      // Close the modal and reset state on success
       setModalOpen(false);
       setSelectedField(null);
     }
@@ -196,7 +213,6 @@ const Adminfield = () => {
 
         <main className="details-area">
           <div className="section-tabs">
-            {/* ✅ FIX: Array updated to use the new name */}
             {["Personal Information", "Bank Details", "C", "D", "E", "F"].map(
               (sec) => (
                 <button
@@ -206,7 +222,7 @@ const Adminfield = () => {
                   }`}
                   onClick={() => setActiveSection(sec)}
                 >
-                  {sec === "Personal Information" ? sec : ` ${sec}`}
+                  {sec}
                 </button>
               )
             )}
@@ -280,7 +296,6 @@ const Adminfield = () => {
           <div className="modal">
             <h4>Assign “{selectedField}”</h4>
             <div className="modal-options">
-              {/* ✅ FIX: Array in modal updated to use the new name */}
               {["Personal Information", "Bank Details", "C", "D", "E", "F"].map(
                 (sec) => (
                   <label key={sec}>
@@ -290,11 +305,13 @@ const Adminfield = () => {
                       checked={chosenSection === sec}
                       onChange={(e) => setChosenSection(e.target.value)}
                     />
-                    {sec === "Personal Information" ? sec : ` ${sec}`}
+                    {sec}
                   </label>
                 )
               )}
             </div>
+            {/* This will now display the error message */}
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
             <div className="modal-actions">
               <button onClick={confirmAssign}>Confirm</button>
               <button
@@ -317,11 +334,7 @@ const Adminfield = () => {
                 ([sec, fields]) =>
                   fields.length > 0 && (
                     <div key={sec} className="section-preview">
-                      <h4>
-                        {sec === "Personal Information"
-                          ? sec
-                          : `Section ${sec}`}
-                      </h4>
+                      <h4>{sec}</h4>
                       <ul>
                         {fields.map((fld, i) => (
                           <li key={i}>{fld}</li>
