@@ -11,11 +11,11 @@ export const API_BASE =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const Adminfield = () => {
-  const [activeSection, setActiveSection] = useState("A");
+  const [activeSection, setActiveSection] = useState("Personal Information");
   const [searchQuery, setSearchQuery] = useState("");
   const [detailsCatalog, setDetailsCatalog] = useState([]);
   const [previewData, setPreviewData] = useState({
-    A: [],
+    Personal_Information: [],
     B: [],
     C: [],
     D: [],
@@ -280,7 +280,7 @@ const Adminfield = () => {
           <div className="modal">
             <h4>Assign “{selectedField}”</h4>
             <div className="modal-options">
-              {["A", "B", "C", "D", "E", "F"].map((sec) => (
+              {["Personal Information", "B", "C", "D", "E", "F"].map((sec) => (
                 <label key={sec}>
                   <input
                     type="radio"
