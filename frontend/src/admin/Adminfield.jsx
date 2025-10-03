@@ -17,7 +17,7 @@ const Adminfield = () => {
   // ✅ FIX: Key in previewData object updated for consistency
   const [previewData, setPreviewData] = useState({
     "Personal Information": [],
-    B: [],
+    "Bank Details": [],
     C: [],
     D: [],
     E: [],
@@ -197,17 +197,19 @@ const Adminfield = () => {
         <main className="details-area">
           <div className="section-tabs">
             {/* ✅ FIX: Array updated to use the new name */}
-            {["Personal Information", "B", "C", "D", "E", "F"].map((sec) => (
-              <button
-                key={sec}
-                className={`section-tab ${
-                  activeSection === sec ? "active" : ""
-                }`}
-                onClick={() => setActiveSection(sec)}
-              >
-                {sec === "Personal Information" ? sec : `Section ${sec}`}
-              </button>
-            ))}
+            {["Personal Information", "Bank Details", "C", "D", "E", "F"].map(
+              (sec) => (
+                <button
+                  key={sec}
+                  className={`section-tab ${
+                    activeSection === sec ? "active" : ""
+                  }`}
+                  onClick={() => setActiveSection(sec)}
+                >
+                  {sec === "Personal Information" ? sec : `Section ${sec}`}
+                </button>
+              )
+            )}
           </div>
 
           <h2>Available Fields ({detailsCatalog.length})</h2>
@@ -279,17 +281,19 @@ const Adminfield = () => {
             <h4>Assign “{selectedField}”</h4>
             <div className="modal-options">
               {/* ✅ FIX: Array in modal updated to use the new name */}
-              {["Personal Information", "B", "C", "D", "E", "F"].map((sec) => (
-                <label key={sec}>
-                  <input
-                    type="radio"
-                    value={sec}
-                    checked={chosenSection === sec}
-                    onChange={(e) => setChosenSection(e.target.value)}
-                  />
-                  {sec === "Personal Information" ? sec : `Section ${sec}`}
-                </label>
-              ))}
+              {["Personal Information", "Bank Details", "C", "D", "E", "F"].map(
+                (sec) => (
+                  <label key={sec}>
+                    <input
+                      type="radio"
+                      value={sec}
+                      checked={chosenSection === sec}
+                      onChange={(e) => setChosenSection(e.target.value)}
+                    />
+                    {sec === "Personal Information" ? sec : `Section ${sec}`}
+                  </label>
+                )
+              )}
             </div>
             <div className="modal-actions">
               <button onClick={confirmAssign}>Confirm</button>
