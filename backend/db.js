@@ -9,7 +9,7 @@ const isProduction = process.env.NODE_ENV === "production";
 // otherwise, use your local database connection string.
 const connectionString = isProduction
   ? process.env.DATABASE_URL
-  : "postgresql://Kyc_portal:12345@localhost:5432/Aionion_Kyc";
+  : "postgresql://Kyc_fields:12345@localhost:5432/kyc_portal";
 
 const pool = new Pool({
   connectionString: connectionString,
