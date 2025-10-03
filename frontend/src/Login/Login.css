@@ -1,4 +1,3 @@
-/* --- Global Variables and Base Styles --- */
 :root {
   --color-primary: #06d6a0;
   --color-secondary: #118ab2;
@@ -14,16 +13,14 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
-  font-family: sans-serif; /* Added for better default font */
+  font-family: sans-serif;
 }
-
-/* --- Desktop First Layout (Screens > 768px) --- */
 
 .login-page-wrapper {
   display: flex;
   height: 100vh;
   width: 100%;
-  overflow: hidden; /* Prevents scrollbars on desktop */
+  overflow: hidden;
 }
 
 .login-visual-panel {
@@ -36,6 +33,7 @@ body {
   color: white;
   text-align: center;
   padding: 20px;
+  box-sizing: border-box; /* Ensures padding is respected */
 }
 
 .login-form-panel {
@@ -56,9 +54,9 @@ body {
   padding: 40px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  width: 100%; /* Make it flexible */
-  max-width: 360px; /* But not too wide */
-  box-sizing: border-box; /* Ensures padding is included in the width */
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
 }
 
 .login-header h2 {
@@ -74,7 +72,7 @@ body {
 }
 
 .login-form label {
-  margin-bottom: 8px; /* Added for better spacing */
+  margin-bottom: 8px;
   font-weight: 600;
   color: #555;
 }
@@ -83,7 +81,7 @@ body {
   padding: 12px;
   border-radius: var(--radius);
   border: 1px solid #ccc;
-  font-size: 1rem; /* Improves accessibility */
+  font-size: 1rem;
 }
 
 .submit-btn {
@@ -96,7 +94,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   font-size: 1rem;
-  transition: opacity 0.2s; /* Smooth transition */
+  transition: opacity 0.2s;
 }
 
 .submit-btn:hover {
@@ -124,31 +122,29 @@ body {
 
 @media (max-width: 768px) {
   .login-page-wrapper {
-    /* Stack the panels vertically instead of side-by-side */
     flex-direction: column;
-    height: auto; /* Allow the content to define the height */
-    min-height: 100vh; /* Ensure it still covers the screen */
+    height: auto;
+    min-height: 100vh;
   }
 
   .login-visual-panel {
-    /* Give the visual panel a fixed height instead of taking half the screen */
     flex: none;
-    height: 400px;
-    order: 1; /* Keep it at the top */
+    height: auto; /* Let content define the height */
+    min-height: 250px; /* But give it a minimum height */
+    order: 1;
   }
 
   .login-form-panel {
     flex: 1;
-    padding: 40px 20px; /* Add more padding on top and bottom */
     order: 2;
-    /* Change alignment to center to ensure it's vertically centered in its own space */
+    /* ✅ FIX: Add more padding and align content to the top */
+    padding: 40px 20px;
     align-items: center;
-    justify-content: flex-start; /* Align content to the top of the panel */
+    justify-content: flex-start;
   }
 
   .login-box {
-    /* Remove the shadow for a cleaner mobile look */
     box-shadow: none;
-    padding: 20px;
+    padding: 0; /* Remove padding since the panel now has it */
   }
 }
