@@ -1,11 +1,12 @@
-/* :root {
+/* --- Global Variables and Base Styles --- */
+:root {
   --color-primary: #06d6a0;
   --color-secondary: #118ab2;
   --color-accent: #006d77;
   --gradient-main: linear-gradient(135deg, #06d6a0, #118ab2);
   --radius: 12px;
   --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.14);
-} */
+}
 
 html,
 body {
@@ -13,12 +14,16 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
+  font-family: sans-serif; /* Added for better default font */
 }
+
+/* --- Desktop First Layout (Screens > 768px) --- */
 
 .login-page-wrapper {
   display: flex;
   height: 100vh;
-  width: 100vw; /* 🔑 span full viewport width */
+  width: 100%;
+  overflow: hidden; /* Prevents scrollbars on desktop */
 }
 
 .login-visual-panel {
@@ -33,7 +38,6 @@ body {
   padding: 20px;
 }
 
-/* right white side */
 .login-form-panel {
   flex: 1;
   display: flex;
@@ -52,23 +56,36 @@ body {
   padding: 40px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  width: 360px;
+  width: 100%; /* Make it flexible */
+  max-width: 360px; /* But not too wide */
+  box-sizing: border-box; /* Ensures padding is included in the width */
 }
+
 .login-header h2 {
   text-align: center;
   color: var(--color-accent);
   margin-bottom: 20px;
 }
+
 .login-form .form-group {
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
 }
+
+.login-form label {
+  margin-bottom: 8px; /* Added for better spacing */
+  font-weight: 600;
+  color: #555;
+}
+
 .login-form input {
   padding: 12px;
   border-radius: var(--radius);
   border: 1px solid #ccc;
+  font-size: 1rem; /* Improves accessibility */
 }
+
 .submit-btn {
   width: 100%;
   padding: 12px;
@@ -78,20 +95,59 @@ body {
   color: white;
   font-weight: 600;
   cursor: pointer;
+  font-size: 1rem;
+  transition: opacity 0.2s; /* Smooth transition */
 }
+
 .submit-btn:hover {
   opacity: 0.9;
 }
+
 .error-message {
   color: red;
   margin-bottom: 10px;
+  text-align: center;
 }
+
 .form-switch {
   text-align: center;
-  margin-top: 10px;
+  margin-top: 16px;
 }
+
 .form-switch span {
   color: var(--color-accent);
   font-weight: bold;
   cursor: pointer;
+}
+
+/* --- Responsive Styles for Mobile (Screens <= 768px) --- */
+
+@media (max-width: 768px) {
+  .login-page-wrapper {
+    /* Stack the panels vertically instead of side-by-side */
+    flex-direction: column;
+    height: auto; /* Allow the content to define the height */
+    min-height: 100vh; /* Ensure it still covers the screen */
+  }
+
+  .login-visual-panel {
+    /* Give the visual panel a fixed height instead of taking half the screen */
+    flex: none;
+    height: 250px;
+    order: 1; /* Keep it at the top */
+  }
+
+  .login-form-panel {
+    /* Let the form panel take the remaining space and add padding */
+    flex: 1;
+    padding: 20px;
+    order: 2; /* Place it below the visual panel */
+    align-items: flex-start; /* Align form to the top on mobile */
+  }
+
+  .login-box {
+    /* Remove the shadow for a cleaner mobile look */
+    box-shadow: none;
+    padding: 20px;
+  }
 }
