@@ -242,7 +242,7 @@ const Maker = () => {
               className={`nav-btn ${activeSection === sec ? "active" : ""}`}
               onClick={() => setActiveSection(sec)}
             >
-              Section {sec}
+              {sec}
             </button>
           ))}
         </aside>
