@@ -133,16 +133,17 @@ body {
   .login-visual-panel {
     /* Give the visual panel a fixed height instead of taking half the screen */
     flex: none;
-    height: 250px;
+    height: 400px;
     order: 1; /* Keep it at the top */
   }
 
   .login-form-panel {
-    /* Let the form panel take the remaining space and add padding */
     flex: 1;
-    padding: 20px;
-    order: 2; /* Place it below the visual panel */
-    align-items: flex-start; /* Align form to the top on mobile */
+    padding: 40px 20px; /* Add more padding on top and bottom */
+    order: 2;
+    /* Change alignment to center to ensure it's vertically centered in its own space */
+    align-items: center;
+    justify-content: flex-start; /* Align content to the top of the panel */
   }
 
   .login-box {
