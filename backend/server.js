@@ -191,6 +191,7 @@ app.get("/api/fields", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// This is the final, corrected version
 app.post("/api/fields", async (req, res) => {
   try {
     const { name } = req.body;
@@ -198,10 +199,17 @@ app.post("/api/fields", async (req, res) => {
       "INSERT INTO fields (name) VALUES ($1) RETURNING *",
       [name]
     );
-    res.json(result.rows[0]);
+    res.status(201).json(result.rows[0]); // Use 201 for "Created"
   } catch (err) {
+    // This is the new, smarter catch block
     console.error("POST /fields error", err);
-    res.status(500).json({ error: "Server error" });
+    // Check if the error is a unique constraint violation
+    if (err.code === "23505") {
+      // 23505 is the PostgreSQL code for unique_violation
+      return res.status(409).json({ error: "This field name already exists." });
+    }
+    // For all other errors, send a generic 500
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 app.put("/api/fields/:id", async (req, res) => {
