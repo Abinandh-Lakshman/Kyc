@@ -26,7 +26,7 @@ const Adminfield = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
-  const [chosenSection, setChosenSection] = useState("A");
+  const [chosenSection, setChosenSection] = useState("Personal Information");
   const [errorMessage, setErrorMessage] = useState("");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
@@ -198,7 +198,7 @@ const Adminfield = () => {
 
         <main className="details-area">
           <div className="section-tabs">
-            {["A", "B", "C", "D", "E", "F"].map((sec) => (
+            {["Personal Infomation", "B", "C", "D", "E", "F"].map((sec) => (
               <button
                 key={sec}
                 className={`section-tab ${
