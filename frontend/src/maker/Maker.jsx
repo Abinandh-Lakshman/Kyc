@@ -7,29 +7,20 @@ const Maker = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // --- Initial setup from navigation state ---
   const previewData = location.state?.previewData || {};
   const formValuesFromReports = location.state?.formValues || {};
   const activeFromReports = location.state?.activeSection;
   const verifiedFromReports = location.state?.verifiedFields || {};
   const profileIdFromReports = location.state?.profileId;
 
-  // --- Determine sections to display ---
-  let sections = [];
-  if (previewData && Object.keys(previewData).length > 0) {
-    sections = Object.keys(previewData).filter(
-      (sec) => previewData[sec] && previewData[sec].length > 0
-    );
-  }
-  if (
-    sections.length === 0 &&
-    formValuesFromReports &&
-    Object.keys(formValuesFromReports).length > 0
-  ) {
+  let sections = Object.keys(previewData).filter(
+    (sec) => previewData[sec]?.length > 0
+  );
+
+  if (sections.length === 0 && Object.keys(formValuesFromReports).length > 0) {
     sections = Object.keys(formValuesFromReports);
   }
 
-  // --- Early return if no sections are available ---
   if (sections.length === 0) {
     return (
       <div className="checker-container">
@@ -43,7 +34,6 @@ const Maker = () => {
     );
   }
 
-  // --- State Initialization ---
   const initialValues = {};
   sections.forEach((sec) => {
     initialValues[sec] = formValuesFromReports[sec] || {};
@@ -58,54 +48,62 @@ const Maker = () => {
   );
   const [verifiedFields] = useState(verifiedFromReports);
 
-  // --- Validation Logic ---
+  // ✅ UPDATED: New, more specific validation logic
   const validateField = (field, value) => {
     let error = "";
     const lower = field.toLowerCase();
+    const trimmedValue = value.trim();
 
-    if (lower === "aadhar" || lower === "aadhaar") {
-      if (!/^\d{12}$/.test(value)) error = "Aadhar must be 12 digits.";
-    } else if (lower === "pan" || lower === "pan number") {
-      if (!/^[A-Z0-9]{10}$/.test(value))
-        error = "PAN must be 10 characters (uppercase letters/digits).";
-    } else if (lower.includes("email")) {
-      if (!/.+@.+\..+/.test(value)) error = "Invalid email.";
-    } else if (lower.includes("phone") || lower.includes("mobile")) {
-      if (!/^\d{10}$/.test(value)) error = "Phone must be 10 digits.";
-    } else {
-      if (!value.trim()) error = "This field is required.";
+    if (!trimmedValue) {
+      return "This field is required.";
     }
+
+    if (lower.includes("aadhar") || lower.includes("aadhaar")) {
+      if (!/^\d{12}$/.test(trimmedValue)) {
+        error = "Aadhaar must be exactly 12 digits.";
+      }
+    } else if (lower.includes("pan")) {
+      if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(trimmedValue)) {
+        error = "PAN must be in the format ABCDE1234F.";
+      }
+    } else if (lower.includes("dob") || lower.includes("date of birth")) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmedValue)) {
+        error = "Date must be in YYYY-MM-DD format.";
+      }
+    } else if (lower.includes("email")) {
+      if (!/.+@.+\..+/.test(trimmedValue)) {
+        error = "Invalid email format.";
+      }
+    } else if (lower.includes("phone") || lower.includes("mobile")) {
+      if (!/^\d{10}$/.test(trimmedValue)) {
+        error = "Phone must be exactly 10 digits.";
+      }
+    }
+
     return error;
   };
 
-  // --- Event Handlers ---
-  // In Maker.js
-
+  // ✅ UPDATED: Auto-uppercasing for PAN input
   const handleChange = (section, field, value) => {
     const lower = field.toLowerCase();
-
-    if (lower === "pan" || lower === "pan number") {
-      // ✨ BULLETPROOF CHANGE: Clean the value immediately
-      value = value.toUpperCase().trim();
+    if (lower.includes("pan")) {
+      value = value.toUpperCase();
     }
-
     setFormValues((prev) => ({
       ...prev,
       [section]: { ...prev[section], [field]: value },
     }));
-
     const err = validateField(field, value);
     setErrors((prev) => ({
       ...prev,
       [section]: { ...prev[section], [field]: err },
     }));
   };
-  // Validates ONLY the active section. Used by "Save" and "Next" buttons.
+
   const handleSave = (e) => {
     if (e) e.preventDefault();
     const newErrors = {};
     let hasError = false;
-
     const fields =
       previewData[activeSection] ||
       Object.keys(formValues[activeSection] || {});
@@ -115,22 +113,16 @@ const Maker = () => {
       if (err) hasError = true;
       newErrors[field] = err;
     });
-
     setErrors((prev) => ({ ...prev, [activeSection]: newErrors }));
-
     if (hasError) {
       alert("⚠ Please fix validation errors.");
-      return false; // Indicate failure
+      return false;
     }
-
-    alert(`✅ Section ${activeSection} saved`); // This doesn't hit the server, just confirms local state.
-    return true; // Indicate success
+    alert(`✅ Section ${activeSection} saved`);
+    return true;
   };
 
-  // The final submission logic with server-side validation.
-  // Replace your entire handleSubmitAll function with this one
   const handleSubmitAll = async () => {
-    // 1. Run full client-side validation on ALL sections first.
     let hasClientError = false;
     const allErrors = {};
     sections.forEach((sec) => {
@@ -144,51 +136,36 @@ const Maker = () => {
         }
       );
     });
-
     setErrors(allErrors);
     if (hasClientError) {
       alert("⚠ Please correct all validation errors before submitting.");
       return;
     }
-
-    // 2. Attempt to save the data to the server.
     try {
       let response;
       const body = JSON.stringify({ details: formValues });
-
       if (profileIdFromReports) {
-        // This is an UPDATE operation
-        // --- FIX IS HERE ---
         response = await fetch(
-          `${API_BASE}/api/profiles/${profileIdFromReports}`, // Corrected URL
+          `${API_BASE}/api/profiles/${profileIdFromReports}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: body,
+            body,
           }
         );
       } else {
-        // This is a CREATE operation
-        // --- FIX IS HERE ---
-        response = await fetch(
-          `${API_BASE}/api/profiles`, // Corrected URL
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: body,
-          }
-        );
+        response = await fetch(`${API_BASE}/api/profiles`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+        });
       }
-
-      // 3. Handle the server's response.
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
           errorData.error || `Request failed with status ${response.status}`
         );
       }
-
-      // 4. If everything is successful, navigate to the checker page.
       const savedProfile = await response.json();
       navigate("/checker", {
         state: {
@@ -203,28 +180,36 @@ const Maker = () => {
       alert(`❌ Submission Failed: ${err.message}`);
     }
   };
+
   const handleBack = () => {
     const idx = sections.indexOf(activeSection);
     if (idx > 0) setActiveSection(sections[idx - 1]);
   };
 
   const handleNext = () => {
-    // Uses handleSave to validate the current section before moving on.
     if (!handleSave()) return;
     const idx = sections.indexOf(activeSection);
     if (idx < sections.length - 1) setActiveSection(sections[idx + 1]);
   };
 
-  // Helper for setting input attributes based on field name
+  // ✅ UPDATED: Smarter input types and attributes, including for DOB
   const getInputProps = (field) => {
     const lower = field.toLowerCase();
-    if (lower === "aadhar" || lower === "aadhaar")
-      return { maxLength: 12, inputMode: "numeric", pattern: "[0-9]*" };
-    if (lower === "pan" || lower === "pan number")
+    if (lower.includes("aadhar") || lower.includes("aadhaar")) {
+      return { maxLength: 12, inputMode: "numeric" };
+    }
+    if (lower.includes("pan")) {
       return { maxLength: 10, style: { textTransform: "uppercase" } };
-    if (lower.includes("phone") || lower.includes("mobile"))
-      return { maxLength: 10, inputMode: "numeric", pattern: "[0-9]*" };
-    if (lower.includes("email")) return { type: "email" };
+    }
+    if (lower.includes("phone") || lower.includes("mobile")) {
+      return { maxLength: 10, inputMode: "numeric" };
+    }
+    if (lower.includes("email")) {
+      return { type: "email" };
+    }
+    if (lower.includes("dob") || lower.includes("date of birth")) {
+      return { type: "date" };
+    }
     return {};
   };
 
@@ -233,7 +218,6 @@ const Maker = () => {
       <header className="checker-header">
         <h2>Maker Dashboard</h2>
       </header>
-
       <div className="checker-layout">
         <aside className="section-sidebar">
           {sections.map((sec) => (
@@ -242,11 +226,10 @@ const Maker = () => {
               className={`nav-btn ${activeSection === sec ? "active" : ""}`}
               onClick={() => setActiveSection(sec)}
             >
-              Section {sec}
+              {sec}
             </button>
           ))}
         </aside>
-
         <main className="checker-content">
           <h3>{activeSection}</h3>
           <form className="checker-form" onSubmit={(e) => e.preventDefault()}>
@@ -272,8 +255,6 @@ const Maker = () => {
               </div>
             ))}
           </form>
-
-          {/* This is the original button layout from your code */}
           <div className="nav-buttons">
             {sections.indexOf(activeSection) > 0 && (
               <button className="back-btn" onClick={handleBack}>
