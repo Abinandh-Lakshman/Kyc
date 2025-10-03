@@ -5,11 +5,11 @@ const { Pool } = require("pg");
 // This code checks if we are in the "production" environment (on Render)
 const isProduction = process.env.NODE_ENV === "production";
 
-// Use the DATABASE_URL from Render's environment variables in production,
-// otherwise, fall back to your local database configuration.
+// Use the DATABASE_URL from Render for production,
+// otherwise, use your local database connection string.
 const connectionString = isProduction
   ? process.env.DATABASE_URL
-  : "postgresql://your_local_user:your_local_password@localhost:5432/kyc";
+  : "postgresql://Kyc_portal:12345@localhost:5432/Aionion_Kyc";
 
 const pool = new Pool({
   connectionString: connectionString,
@@ -18,4 +18,3 @@ const pool = new Pool({
 });
 
 module.exports = pool;
-
