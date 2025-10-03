@@ -206,7 +206,7 @@ const Adminfield = () => {
                   }`}
                   onClick={() => setActiveSection(sec)}
                 >
-                  {sec === "Personal Information" ? sec : `Section ${sec}`}
+                  {sec === "Personal Information" ? sec : ` ${sec}`}
                 </button>
               )
             )}
@@ -290,7 +290,7 @@ const Adminfield = () => {
                       checked={chosenSection === sec}
                       onChange={(e) => setChosenSection(e.target.value)}
                     />
-                    {sec === "Personal Information" ? sec : `Section ${sec}`}
+                    {sec === "Personal Information" ? sec : ` ${sec}`}
                   </label>
                 )
               )}
