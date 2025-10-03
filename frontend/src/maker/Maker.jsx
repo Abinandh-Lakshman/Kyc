@@ -242,13 +242,13 @@ const Maker = () => {
               className={`nav-btn ${activeSection === sec ? "active" : ""}`}
               onClick={() => setActiveSection(sec)}
             >
-              {sec}
+              Section {sec}
             </button>
           ))}
         </aside>
 
         <main className="checker-content">
-          <h3>Section {activeSection}</h3>
+          <h3>{activeSection}</h3>
           <form className="checker-form" onSubmit={(e) => e.preventDefault()}>
             {(
               previewData[activeSection] ||
