@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Checker.css";
+import { API_BASE } from "../admin/Adminfield";
 
-import { API_BASE } from '../admin/Adminfield';
 const Checker = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   const formValues = location.state?.formValues || {};
   const previewData = location.state?.previewData || {};
-  const profileId = location.state?.profileId; // ✅ get profileId passed from Maker
+  const profileId = location.state?.profileId;
 
   const [verifiedFields, setVerifiedFields] = useState(
     location.state?.verifiedFields || {}
   );
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [startTime] = useState(Date.now());
 
-  // ✅ Toggle verification checkbox
+  // This functionality is unchanged
   const toggleVerify = (section, field) => {
     setVerifiedFields((prev) => ({
       ...prev,
@@ -29,7 +28,7 @@ const Checker = () => {
     }));
   };
 
-  // ✏ Go back to Maker for editing
+  // This functionality is unchanged
   const handleEdit = (section) => {
     navigate("/maker", {
       replace: true,
@@ -38,17 +37,15 @@ const Checker = () => {
         previewData,
         activeSection: section,
         verifiedFields,
-        profileId, // ✅ keep profileId intact when editing
+        profileId,
       },
     });
   };
 
-  // 🚀 Submit → update backend first, then go to Reports
-  // Replace your handleSubmit function with this corrected version
+  // This functionality is unchanged
   const handleSubmit = async () => {
     try {
       if (profileId) {
-        // --- THE FIX IS ON THIS LINE ---
         await fetch(`${API_BASE}/api/profiles/${profileId}/verify`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -66,33 +63,22 @@ const Checker = () => {
     }
   };
 
-  // --- Stats Calculation ---
-  const totalFields = Object.entries(formValues).reduce(
-    (acc, [_, fields]) => acc + Object.keys(fields).length,
+  const totalFields = Object.values(formValues).reduce(
+    (acc, fields) => acc + Object.keys(fields).length,
     0
   );
 
-  let verifiedCount = 0;
-  Object.entries(formValues).forEach(([section, fields]) => {
-    Object.keys(fields).forEach((field) => {
-      if (verifiedFields[section]?.[field]) {
-        verifiedCount++;
-      }
-    });
-  });
+  const verifiedCount = Object.values(verifiedFields).reduce(
+    (acc, section) => acc + Object.values(section).filter(Boolean).length,
+    0
+  );
 
   const notVerifiedCount = totalFields - verifiedCount;
-  const elapsedTime = ((Date.now() - startTime) / 1000).toFixed(1);
 
-  // --- Filter ---
   const shouldShowRow = (field) => {
-    if (
-      searchQuery &&
-      !field.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
+    return (
+      !searchQuery || field.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   };
 
   return (
@@ -104,7 +90,6 @@ const Checker = () => {
         <div className="stat-card">❌ Not Verified: {notVerifiedCount}</div>
       </div>
 
-      {/* ✅ Search Field */}
       <div className="filters">
         <input
           type="text"
@@ -118,16 +103,23 @@ const Checker = () => {
         ([section, fields]) =>
           Object.keys(fields).length > 0 && (
             <div key={section} className="section-container">
+              {/* ✅ FIX: The "Edit" button is now here, in the header. Its functionality is the same. */}
               <div className="section-header">
                 <h4>Section {section}</h4>
+                <button
+                  className="edit-btn-header"
+                  onClick={() => handleEdit(section)}
+                >
+                  Edit Section
+                </button>
               </div>
               <table className="report-table">
+                {/* ✅ FIX: Removed the "Action" column header */}
                 <thead>
                   <tr>
                     <th>Field</th>
                     <th>Value</th>
                     <th>Verified</th>
-                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -144,14 +136,7 @@ const Checker = () => {
                             onChange={() => toggleVerify(section, field)}
                           />
                         </td>
-                        <td>
-                          <button
-                            className="edit-btn"
-                            onClick={() => handleEdit(section)}
-                          >
-                            Edit
-                          </button>
-                        </td>
+                        {/* ✅ FIX: Removed the button from every single row */}
                       </tr>
                     ))}
                 </tbody>
