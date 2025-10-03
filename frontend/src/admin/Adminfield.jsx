@@ -6,16 +6,17 @@ import "./Adminfield.css";
 import { FaPlus, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 import { MdSave } from "react-icons/md";
 
-// This is correct and does not need to be changed.
 export const API_BASE =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const Adminfield = () => {
+  // ✅ FIX: Default section name updated
   const [activeSection, setActiveSection] = useState("Personal Information");
   const [searchQuery, setSearchQuery] = useState("");
   const [detailsCatalog, setDetailsCatalog] = useState([]);
+  // ✅ FIX: Key in previewData object updated for consistency
   const [previewData, setPreviewData] = useState({
-    Personal_Information: [],
+    "Personal Information": [],
     B: [],
     C: [],
     D: [],
@@ -26,6 +27,7 @@ const Adminfield = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedField, setSelectedField] = useState(null);
+  // ✅ FIX: Default chosen section updated
   const [chosenSection, setChosenSection] = useState("Personal Information");
   const [errorMessage, setErrorMessage] = useState("");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -35,9 +37,8 @@ const Adminfield = () => {
   const [editValue, setEditValue] = useState("");
   const [submitError, setSubmitError] = useState("");
 
-  // ✅ CORRECTED - Loads fields from the DB on mount
   useEffect(() => {
-    fetch(`${API_BASE}/api/fields`) // Correctly has /api
+    fetch(`${API_BASE}/api/fields`)
       .then((res) => res.json())
       .then((data) => setDetailsCatalog(data))
       .catch((err) => console.error("Error loading fields:", err));
@@ -47,24 +48,26 @@ const Adminfield = () => {
     navigate("/");
   };
 
-  // ✅ CORRECTED - Adds a new field
   const handleAddNewField = async () => {
     const cleanName = newField.trim();
     if (!cleanName) return;
-
     try {
       const res = await fetch(`${API_BASE}/api/fields`, {
-        // Correctly has /api
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: cleanName }),
       });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Failed to save field.");
+      }
       const saved = await res.json();
       setDetailsCatalog((prev) => [...prev, saved]);
       setNewField("");
+      setSubmitError("");
     } catch (err) {
       console.error("Add field error:", err);
-      setSubmitError("❌ Failed to save field.");
+      setSubmitError(`❌ ${err.message}`);
     }
   };
 
@@ -73,12 +76,10 @@ const Adminfield = () => {
     setEditValue(field.name);
   };
 
-  // ✅ CORRECTED - Saves an edited field
   const saveEditField = async () => {
     if (!editValue.trim()) return;
     try {
       const res = await fetch(`${API_BASE}/api/fields/${editFieldId}`, {
-        // Correctly has /api
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editValue }),
@@ -94,10 +95,9 @@ const Adminfield = () => {
     }
   };
 
-  // ✅ CORRECTED - Deletes a field
   const deleteField = async (id) => {
     try {
-      await fetch(`${API_BASE}/api/fields/${id}`, { method: "DELETE" }); // Correctly has /api
+      await fetch(`${API_BASE}/api/fields/${id}`, { method: "DELETE" });
       setDetailsCatalog((prev) => prev.filter((f) => f.id !== id));
     } catch (err) {
       console.error("Delete error:", err);
@@ -152,8 +152,6 @@ const Adminfield = () => {
     setConfirmModalOpen(true);
   };
 
-  // --- The rest of your JSX and component logic ---
-  // (This part was already correct and does not need changes)
   return (
     <div className="maker-container">
       <header className="maker-header">
@@ -174,7 +172,7 @@ const Adminfield = () => {
             />
           </div>
           <div className="preview-panel">
-            <h3>Selected (Section {activeSection})</h3>
+            <h3>Selected ({activeSection})</h3>
             {previewData[activeSection].length === 0 ? (
               <p>No fields assigned</p>
             ) : (
@@ -198,7 +196,8 @@ const Adminfield = () => {
 
         <main className="details-area">
           <div className="section-tabs">
-            {["Personal Infomation", "B", "C", "D", "E", "F"].map((sec) => (
+            {/* ✅ FIX: Array updated to use the new name */}
+            {["Personal Information", "B", "C", "D", "E", "F"].map((sec) => (
               <button
                 key={sec}
                 className={`section-tab ${
@@ -206,7 +205,7 @@ const Adminfield = () => {
                 }`}
                 onClick={() => setActiveSection(sec)}
               >
-                Section {sec}
+                {sec === "Personal Information" ? sec : `Section ${sec}`}
               </button>
             ))}
           </div>
@@ -274,12 +273,12 @@ const Adminfield = () => {
         </main>
       </div>
 
-      {/* ... (rest of your modal JSX) ... */}
       {modalOpen && (
         <div className="modal-overlay">
           <div className="modal">
             <h4>Assign “{selectedField}”</h4>
             <div className="modal-options">
+              {/* ✅ FIX: Array in modal updated to use the new name */}
               {["Personal Information", "B", "C", "D", "E", "F"].map((sec) => (
                 <label key={sec}>
                   <input
@@ -288,7 +287,7 @@ const Adminfield = () => {
                     checked={chosenSection === sec}
                     onChange={(e) => setChosenSection(e.target.value)}
                   />
-                  Section {sec}
+                  {sec === "Personal Information" ? sec : `Section ${sec}`}
                 </label>
               ))}
             </div>
@@ -314,7 +313,11 @@ const Adminfield = () => {
                 ([sec, fields]) =>
                   fields.length > 0 && (
                     <div key={sec} className="section-preview">
-                      <h4>Section {sec}</h4>
+                      <h4>
+                        {sec === "Personal Information"
+                          ? sec
+                          : `Section ${sec}`}
+                      </h4>
                       <ul>
                         {fields.map((fld, i) => (
                           <li key={i}>{fld}</li>
