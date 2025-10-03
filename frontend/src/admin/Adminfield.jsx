@@ -38,12 +38,11 @@ const Adminfield = () => {
 
   // ✅ Load fields from DB on mount
   useEffect(() => {
-    fetch(`${API_BASE}/fields`)
+    fetch(`${API_BASE}/api/fields`) // <-- THIS IS THE FINAL FIX!
       .then((res) => res.json())
-      .then((data) => setDetailsCatalog(data)) // data = [{id, name}]
+      .then((data) => setDetailsCatalog(data))
       .catch((err) => console.error("Error loading fields:", err));
   }, []);
-
   // ✅ Logout function
   const handleLogout = () => {
     navigate("/"); // redirect to login page
@@ -55,7 +54,7 @@ const Adminfield = () => {
     if (!cleanName) return;
 
     try {
-      const res = await fetch(`${API_BASE}/fields`, {
+      const res = await fetch(`${API_BASE}/api/fields`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: cleanName }),
