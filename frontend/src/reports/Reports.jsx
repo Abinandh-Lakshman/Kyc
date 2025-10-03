@@ -13,7 +13,6 @@ const Reports = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [fileFormat, setFileFormat] = useState("excel");
 
-  // ✅ User must enter PAN first
   const handleVerifyPan = async () => {
     if (!panInput.trim()) {
       setError("⚠ Please enter a PAN number.");
@@ -21,10 +20,9 @@ const Reports = () => {
       return;
     }
     try {
-      setMatchedData(null); // clear old data while fetching
-      // --- FIX IS HERE ---
+      setMatchedData(null);
       const res = await fetch(
-        `${API_BASE}/api/profiles/by-pan/${panInput}` // <-- CORRECTED URL
+        `${API_BASE}/api/profiles/by-pan/${panInput.toUpperCase().trim()}`
       );
       const data = await res.json();
 
@@ -34,7 +32,7 @@ const Reports = () => {
       } else {
         setError("");
         setVerifiedFields(data[0].verified || {});
-        setMatchedData(data[0].details); // ✅ show after generate
+        setMatchedData(data[0].details);
       }
     } catch (err) {
       console.error("❌ Error fetching by PAN", err);
@@ -43,17 +41,21 @@ const Reports = () => {
     }
   };
 
-  // --- Export handlers ---
+  const getStatus = (section, field) => {
+    const isVerified = verifiedFields[section]?.[field];
+    if (isVerified === true) return "✅ Verified";
+    if (isVerified === false) return "❌ Not Verified";
+    return "⏳ Pending";
+  };
+
   const exportExcel = () => {
     const wb = XLSX.utils.book_new();
     Object.entries(matchedData).forEach(([section, fields]) => {
-      const rows = Object.entries(fields).map(([field, value]) => {
-        let status = "⏳ Pending";
-        if (verifiedFields[section]?.[field] === true) status = "✅ Verified";
-        else if (verifiedFields[section]?.[field] === false)
-          status = "❌ Not Verified";
-        return { Field: field, Value: value, Verified: status };
-      });
+      const rows = Object.entries(fields).map(([field, value]) => ({
+        Field: field,
+        Value: value,
+        Verified: getStatus(section, field),
+      }));
       const ws = XLSX.utils.json_to_sheet(rows);
       XLSX.utils.book_append_sheet(wb, ws, `Section ${section}`);
     });
@@ -65,10 +67,7 @@ const Reports = () => {
     Object.entries(matchedData).forEach(([section, fields]) => {
       csvContent += `Section ${section}\nField,Value,Verified\n`;
       Object.entries(fields).forEach(([field, value]) => {
-        let status = "⏳ Pending";
-        if (verifiedFields[section]?.[field] === true) status = "✅ Verified";
-        else if (verifiedFields[section]?.[field] === false)
-          status = "❌ Not Verified";
+        const status = getStatus(section, field);
         csvContent += `"${field}","${value}","${status}"\n`;
       });
       csvContent += "\n";
@@ -85,13 +84,11 @@ const Reports = () => {
   const exportPDF = () => {
     const doc = new jsPDF();
     Object.entries(matchedData).forEach(([section, fields], index) => {
-      const rows = Object.entries(fields).map(([field, value]) => {
-        let status = "⏳ Pending";
-        if (verifiedFields[section]?.[field] === true) status = "✅ Verified";
-        else if (verifiedFields[section]?.[field] === false)
-          status = "❌ Not Verified";
-        return [field, value, status];
-      });
+      const rows = Object.entries(fields).map(([field, value]) => [
+        field,
+        value,
+        getStatus(section, field),
+      ]);
       doc.setFontSize(14);
       doc.text(`Section ${section}`, 14, 15);
       autoTable(doc, {
@@ -115,20 +112,14 @@ const Reports = () => {
   };
 
   const shouldShowRow = (field) => {
-    if (
-      searchQuery &&
-      !field.toLowerCase().includes(searchQuery.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
+    return (
+      !searchQuery || field.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   };
 
   return (
     <div className="reports-container">
       <h2>KYC Report Verification</h2>
-
-      {/* PAN Entry always visible */}
       <div className="pan-verification">
         <h3>Enter PAN to view report</h3>
         <div className="pan-input-box">
@@ -143,12 +134,9 @@ const Reports = () => {
         </div>
         {error && <p className="error-msg">{error}</p>}
       </div>
-
-      {/* Report displayed below PAN input after verify */}
       {matchedData && (
         <div className="final-report">
           <h3>📄 Final KYC Report for {panInput}</h3>
-
           <div className="filters">
             <input
               type="text"
@@ -157,7 +145,6 @@ const Reports = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
           {Object.entries(matchedData).map(
             ([section, fields]) =>
               Object.keys(fields).length > 0 && (
@@ -171,29 +158,22 @@ const Reports = () => {
                         <th>Status</th>
                       </tr>
                     </thead>
+                    {/* ✅ FIX: This logic is now bulletproof */}
                     <tbody>
                       {Object.entries(fields)
                         .filter(([field]) => shouldShowRow(field))
-                        .map(([field, value]) => {
-                          let status = "Pending";
-                          if (verifiedFields[section]?.[field] === true)
-                            status = "Verified";
-                          else if (verifiedFields[section]?.[field] === false)
-                            status = "Not Verified";
-                          return (
-                            <tr key={field}>
-                              <td>{field}</td>
-                              <td>{value}</td>
-                              <td>{status}</td>
-                            </tr>
-                          );
-                        })}
+                        .map(([field, value]) => (
+                          <tr key={field}>
+                            <td>{field}</td>
+                            <td>{value}</td>
+                            <td>{getStatus(section, field)}</td>
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 </div>
               )
           )}
-
           <div className="export-controls">
             <select
               value={fileFormat}
