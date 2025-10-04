@@ -117,3 +117,28 @@
   border-radius: 6px;
   border: 1px solid #ccc;
 }
+/* --- Styles for the new "Edit Section" button --- */
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 8px;
+}
+
+.edit-btn-header {
+  padding: 6px 14px;
+  border: none;
+  border-radius: var(--radius);
+  background-color: var(--color-secondary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.edit-btn-header:hover {
+  background-color: var(--color-accent);
+}

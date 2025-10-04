@@ -6,7 +6,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Helper to find PAN (This part is correct and unchanged)
+// ✅ NEW: Middleware to prevent API responses from being cached by browsers.
+// This is the fix for the mobile caching issue.
+const setCacheHeaders = (req, res, next) => {
+  res.setHeader("Cache-Control", "no-store");
+  next();
+};
+
+// Apply this middleware to all routes that start with /api
+app.use("/api", setCacheHeaders);
+
+// Helper to find PAN (unchanged)
 const findPanInDetails = (details) => {
   if (!details || typeof details !== "object") return null;
   for (const sectionKey in details) {
@@ -25,10 +35,10 @@ const findPanInDetails = (details) => {
   return null;
 };
 
-// SQL query builder for PAN check (This part is correct and unchanged)
+// SQL query builder for PAN check (✅ Table name corrected)
 const createPanCheckQuery = (isUpdate = false) => {
   let sql = `
-    SELECT id FROM kyc_profiles p
+    SELECT id FROM kycfields p
     WHERE EXISTS (
       SELECT 1
       FROM jsonb_each(p.details) AS section,
@@ -44,7 +54,7 @@ const createPanCheckQuery = (isUpdate = false) => {
   return sql;
 };
 
-// ---- PROFILE ROUTES (These are all correct and unchanged) ----
+// ---- PROFILE ROUTES (✅ Table names corrected) ----
 
 app.post("/api/profiles", async (req, res) => {
   try {
@@ -55,15 +65,13 @@ app.post("/api/profiles", async (req, res) => {
       const cleanPan = pan.toUpperCase().trim();
       const { rows } = await pool.query(panCheckSql, [cleanPan]);
       if (rows.length > 0) {
-        return res
-          .status(409)
-          .json({
-            error: "Conflict: A profile with this PAN number already exists.",
-          });
+        return res.status(409).json({
+          error: "Conflict: A profile with this PAN number already exists.",
+        });
       }
     }
     const result = await pool.query(
-      "INSERT INTO kyc_profiles (details) VALUES ($1) RETURNING *",
+      "INSERT INTO kycfields (details) VALUES ($1) RETURNING *",
       [details]
     );
     res.status(201).json(result.rows[0]);
@@ -86,16 +94,14 @@ app.put("/api/profiles/:id", async (req, res) => {
       const cleanPan = pan.toUpperCase().trim();
       const { rows } = await pool.query(panCheckSql, [cleanPan, id]);
       if (rows.length > 0) {
-        return res
-          .status(409)
-          .json({
-            error:
-              "Conflict: This PAN number is already assigned to another profile.",
-          });
+        return res.status(409).json({
+          error:
+            "Conflict: This PAN number is already assigned to another profile.",
+        });
       }
     }
     const result = await pool.query(
-      "UPDATE kyc_profiles SET details=$1, updated_at=NOW() WHERE id=$2 RETURNING *",
+      "UPDATE kycfields SET details=$1, updated_at=NOW() WHERE id=$2 RETURNING *",
       [details, id]
     );
     if (result.rows.length === 0) {
@@ -113,7 +119,7 @@ app.get("/api/profiles/by-pan/:pan", async (req, res) => {
     const pan = (req.params.pan || "").toUpperCase().trim();
     const sql = `
       SELECT p.id, p.details, p.verified, p.created_at, p.updated_at
-      FROM kyc_profiles p
+      FROM kycfields p
       WHERE EXISTS (
         SELECT 1
         FROM jsonb_each(p.details) AS section,
@@ -139,7 +145,7 @@ app.put("/api/profiles/:id/verify", async (req, res) => {
       return res.status(400).json({ error: "Missing verified object" });
     }
     const result = await pool.query(
-      "UPDATE kyc_profiles SET verified=$1, updated_at=NOW() WHERE id=$2 RETURNING *",
+      "UPDATE kycfields SET verified=$1, updated_at=NOW() WHERE id=$2 RETURNING *",
       [verified, id]
     );
     if (result.rows.length === 0) {
@@ -155,7 +161,7 @@ app.put("/api/profiles/:id/verify", async (req, res) => {
 app.get("/api/profiles/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query("SELECT * FROM kyc_profiles WHERE id=$1", [
+    const result = await pool.query("SELECT * FROM kycfields WHERE id=$1", [
       id,
     ]);
     res.json(result.rows[0] || null);
@@ -165,9 +171,7 @@ app.get("/api/profiles/:id", async (req, res) => {
   }
 });
 
-// ---- FIELDS API ROUTES ----
-
-// GET all fields - this will now automatically return the new section_category column
+// ---- FIELDS API ROUTES (unchanged, already correct) ----
 app.get("/api/fields", async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM fields ORDER BY id ASC");
@@ -178,22 +182,18 @@ app.get("/api/fields", async (req, res) => {
   }
 });
 
-// ✅ UPDATED: This route now handles the new `section_category`
 app.post("/api/fields", async (req, res) => {
   try {
     const { name, section_category } = req.body;
-
     if (!name || !section_category) {
       return res
         .status(400)
         .json({ error: "Field name and section category are required." });
     }
-
     const result = await pool.query(
       "INSERT INTO fields (name, section_category) VALUES ($1, $2) RETURNING *",
       [name, section_category]
     );
-
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("POST /fields error", err);
@@ -204,7 +204,6 @@ app.post("/api/fields", async (req, res) => {
   }
 });
 
-// PUT (edit) a field - no changes needed
 app.put("/api/fields/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -220,7 +219,6 @@ app.put("/api/fields/:id", async (req, res) => {
   }
 });
 
-// DELETE a field - no changes needed
 app.delete("/api/fields/:id", async (req, res) => {
   try {
     const { id } = req.params;
