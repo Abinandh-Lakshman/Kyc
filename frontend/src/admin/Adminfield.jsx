@@ -24,19 +24,33 @@ const Adminfield = () => {
   const [submitError, setSubmitError] = useState("");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
+  // ✅ NEW: A reusable function to get the latest data from the server.
+  const fetchFields = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/fields`);
+      if (!res.ok) {
+        throw new Error("Server responded with an error");
+      }
+      const data = await res.json();
+      setDetailsCatalog(data);
+    } catch (err) {
+      console.error("Error loading fields:", err);
+      setSubmitError("❌ Could not load fields from the server.");
+    }
+  };
+
   useEffect(() => {
     setNewFieldCategory(activeSection);
   }, [activeSection]);
 
+  // ✅ UPDATED: The initial load now uses the reusable fetchFields function.
   useEffect(() => {
-    fetch(`${API_BASE}/api/fields`)
-      .then((res) => res.json())
-      .then((data) => setDetailsCatalog(data))
-      .catch((err) => console.error("Error loading fields:", err));
+    fetchFields();
   }, []);
 
   const handleLogout = () => navigate("/");
 
+  // ✅ UPDATED: Instead of manually adding the new field, it now refetches the whole list.
   const handleAddNewField = async () => {
     const cleanName = newField.trim();
     if (!cleanName) return;
@@ -53,8 +67,8 @@ const Adminfield = () => {
         const errData = await res.json();
         throw new Error(errData.error || "Failed to save field.");
       }
-      const saved = await res.json();
-      setDetailsCatalog((prev) => [...prev, saved]);
+      // After successfully adding, refetch the data to ensure UI is in sync.
+      await fetchFields();
       setNewField("");
       setSubmitError("");
     } catch (err) {
@@ -68,6 +82,7 @@ const Adminfield = () => {
     setEditValue(field.name);
   };
 
+  // ✅ UPDATED: Instead of manually editing the field, it now refetches the whole list.
   const saveEditField = async () => {
     if (!editValue.trim()) return;
     try {
@@ -76,10 +91,11 @@ const Adminfield = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editValue }),
       });
-      const updated = await res.json();
-      setDetailsCatalog((prev) =>
-        prev.map((f) => (f.id === updated.id ? updated : f))
-      );
+      if (!res.ok) {
+        throw new Error("Failed to update field");
+      }
+      // After successfully editing, refetch to get the latest data.
+      await fetchFields();
       setEditFieldId(null);
       setEditValue("");
     } catch (err) {
@@ -87,16 +103,24 @@ const Adminfield = () => {
     }
   };
 
+  // ✅ UPDATED: Instead of manually removing the field, it now refetches the whole list.
   const deleteField = async (id) => {
     try {
-      await fetch(`${API_BASE}/api/fields/${id}`, { method: "DELETE" });
-      setDetailsCatalog((prev) => prev.filter((f) => f.id !== id));
+      const res = await fetch(`${API_BASE}/api/fields/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to delete field");
+      }
+      // After successfully deleting, refetch to get the latest data.
+      await fetchFields();
     } catch (err) {
       console.error("Delete error:", err);
     }
   };
 
   const getFilteredDetails = () => {
+    if (!Array.isArray(detailsCatalog)) return []; // Safety check
     return detailsCatalog.filter((field) => {
       const matchesSection = field.section_category === activeSection;
       if (!matchesSection) return false;
@@ -138,8 +162,8 @@ const Adminfield = () => {
       setSubmitError("⚠ You must assign 'PAN' before submitting.");
       return;
     }
-    setSubmitError(""); // Clear error on success
-    setConfirmModalOpen(true); // Open the review modal
+    setSubmitError("");
+    setConfirmModalOpen(true);
   };
 
   return (
@@ -210,21 +234,43 @@ const Adminfield = () => {
           <div className="details-list">
             {getFilteredDetails().map((field) => (
               <div key={field.id} className="field-card">
-                <span>{field.name}</span>
-                <div>
-                  <button
-                    onClick={() => assignField(field)}
-                    title="Add to Preview"
-                  >
-                    <FaPlus />
-                  </button>
-                  <button onClick={() => startEditField(field)} title="Edit">
-                    <FaEdit />
-                  </button>
-                  <button onClick={() => deleteField(field.id)} title="Delete">
-                    <FaTrash />
-                  </button>
-                </div>
+                {editFieldId === field.id ? (
+                  <>
+                    <input
+                      type="text"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      autoFocus
+                    />
+                    <button onClick={saveEditField} title="Save">
+                      <MdSave />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span>{field.name}</span>
+                    <div>
+                      <button
+                        onClick={() => assignField(field)}
+                        title="Add to Preview"
+                      >
+                        <FaPlus />
+                      </button>
+                      <button
+                        onClick={() => startEditField(field)}
+                        title="Edit"
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        onClick={() => deleteField(field.id)}
+                        title="Delete"
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
@@ -266,7 +312,6 @@ const Adminfield = () => {
               You are about to submit the following field configuration. Do you
               want to proceed?
             </p>
-
             <div className="final-preview">
               {Object.entries(previewData).map(
                 ([section, fields]) =>
@@ -282,7 +327,6 @@ const Adminfield = () => {
                   )
               )}
             </div>
-
             <div className="modal-actions">
               <button
                 className="confirm-btn"
