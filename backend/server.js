@@ -6,12 +6,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api", (req, res, next) => {
+const setCacheHeaders = (req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
   next();
-});
+};
 
-// Apply this middleware to all routes that start with /api
 app.use("/api", setCacheHeaders);
 
 // Helper to find PAN (unchanged)
