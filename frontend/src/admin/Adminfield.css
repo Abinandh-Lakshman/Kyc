@@ -158,12 +158,6 @@ body {
   flex-direction: column;
   gap: 8px;
 }
-.preview-section li {
-  /* ... */
-}
-.remove-btn {
-  /* ... */
-}
 
 /* =======================================================
    DETAILS AREA
@@ -244,9 +238,6 @@ body {
   display: flex;
   gap: 6px;
 }
-.field-card button {
-  /* ... */
-}
 
 /* Icon coloring */
 .field-card button[title="Add to Preview"] {
@@ -259,13 +250,6 @@ body {
   color: var(--icon-trash);
 }
 
-/* Action row */
-.add-new-field {
-  /* ... */
-}
-.add-new-field button {
-  /* ... */
-}
 
 /* Submit button */
 .details-footer {

@@ -6,12 +6,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ NEW: Middleware to prevent API responses from being cached by browsers.
-// This is the fix for the mobile caching issue.
-const setCacheHeaders = (req, res, next) => {
+app.use("/api", (req, res, next) => {
   res.setHeader("Cache-Control", "no-store");
   next();
-};
+});
 
 // Apply this middleware to all routes that start with /api
 app.use("/api", setCacheHeaders);
