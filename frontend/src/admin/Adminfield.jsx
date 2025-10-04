@@ -11,7 +11,7 @@ const Adminfield = () => {
   const sections = ["Personal Information", "Bank Details", "C", "D", "E", "F"];
   const [activeSection, setActiveSection] = useState(sections[0]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [detailsCatalog, setDetailsCatalog] = useState([]); // This will hold ALL fields from the DB
+  const [detailsCatalog, setDetailsCatalog] = useState([]);
   const [previewData, setPreviewData] = useState(
     Object.fromEntries(sections.map((s) => [s, []]))
   );
@@ -24,7 +24,6 @@ const Adminfield = () => {
   const [submitError, setSubmitError] = useState("");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
-  // ✅ NEW: This effect keeps the "Add New" dropdown in sync with the active tab.
   useEffect(() => {
     setNewFieldCategory(activeSection);
   }, [activeSection]);
@@ -38,7 +37,6 @@ const Adminfield = () => {
 
   const handleLogout = () => navigate("/");
 
-  // ✅ UPDATED: Now sends the section_category to the backend when creating a field.
   const handleAddNewField = async () => {
     const cleanName = newField.trim();
     if (!cleanName) return;
@@ -98,15 +96,10 @@ const Adminfield = () => {
     }
   };
 
-  // ✅ REWRITTEN: This is the core logic. It filters the main list to only show
-  // fields that belong to the currently active section.
   const getFilteredDetails = () => {
     return detailsCatalog.filter((field) => {
-      // 1. Filter by the active section category
       const matchesSection = field.section_category === activeSection;
       if (!matchesSection) return false;
-
-      // 2. Then, filter by the search query (if there is one)
       const matchesSearch =
         !searchQuery.trim() ||
         field.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -114,21 +107,18 @@ const Adminfield = () => {
     });
   };
 
-  // ✅ REWRITTEN: The modal is gone. This function now directly assigns a field to the preview.
   const assignField = (field) => {
-    // Check if the field is already in the preview for this section
     if (previewData[activeSection].includes(field.name)) {
       setSubmitError(
         `"${field.name}" is already in the preview for this section.`
       );
       return;
     }
-
     setPreviewData((prev) => ({
       ...prev,
       [activeSection]: [...prev[activeSection], field.name],
     }));
-    setSubmitError(""); // Clear any previous errors
+    setSubmitError("");
   };
 
   const removeField = (section, fieldToRemove) => {
@@ -148,7 +138,8 @@ const Adminfield = () => {
       setSubmitError("⚠ You must assign 'PAN' before submitting.");
       return;
     }
-    setConfirmModalOpen(true);
+    setSubmitError(""); // Clear error on success
+    setConfirmModalOpen(true); // Open the review modal
   };
 
   return (
@@ -162,7 +153,43 @@ const Adminfield = () => {
 
       <div className="main-layout">
         <aside className="sidebar">
-          {/* Sidebar content is mostly the same */}
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Search available fields..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="preview-panel">
+            <h3>Preview Selection</h3>
+            {Object.values(previewData).every((arr) => arr.length === 0) ? (
+              <p>No fields assigned to preview yet. Click '+' to add.</p>
+            ) : (
+              Object.entries(previewData).map(
+                ([section, fields]) =>
+                  fields.length > 0 && (
+                    <div key={section} className="preview-section">
+                      <h4>{section}</h4>
+                      <ul>
+                        {fields.map((field, index) => (
+                          <li key={index}>
+                            <span>{field}</span>
+                            <button
+                              className="remove-btn"
+                              onClick={() => removeField(section, field)}
+                              title={`Remove ${field}`}
+                            >
+                              <FaTimes />
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )
+              )
+            )}
+          </div>
         </aside>
 
         <main className="details-area">
@@ -179,15 +206,12 @@ const Adminfield = () => {
               </button>
             ))}
           </div>
-
           <h2>Available Fields for {activeSection}</h2>
-
           <div className="details-list">
             {getFilteredDetails().map((field) => (
               <div key={field.id} className="field-card">
                 <span>{field.name}</span>
                 <div>
-                  {/* ✅ UPDATED: Button now calls the simplified assignField function */}
                   <button
                     onClick={() => assignField(field)}
                     title="Add to Preview"
@@ -204,8 +228,6 @@ const Adminfield = () => {
               </div>
             ))}
           </div>
-
-          {/* ✅ UPDATED: "Add New Field" UI now includes a category selector */}
           <div className="add-new-field">
             <input
               type="text"
@@ -227,42 +249,46 @@ const Adminfield = () => {
               <FaPlus /> Add Field
             </button>
           </div>
-
           {submitError && <div className="error-banner">{submitError}</div>}
-
           <div className="details-footer">
-            <button className="submit-btn" onClick={handleSubmit}>
+            <button className="submit-btn" onClick={() => handleSubmit()}>
               Submit ➜
             </button>
           </div>
         </main>
       </div>
 
-      {/* The assignment modal has been removed, but the confirm/submit modal remains */}
       {confirmModalOpen && (
         <div className="modal-overlay">
-          <div className="modal large">
-            <h3>Review Your Selection</h3>
+          <div className="modal">
+            <h4>Confirm Submission</h4>
+            <p>
+              You are about to submit the following field configuration. Do you
+              want to proceed?
+            </p>
+
             <div className="final-preview">
               {Object.entries(previewData).map(
-                ([sec, fields]) =>
+                ([section, fields]) =>
                   fields.length > 0 && (
-                    <div key={sec} className="section-preview">
-                      <h4>{sec}</h4>
+                    <div key={section} className="section-preview">
+                      <h5>{section}</h5>
                       <ul>
-                        {fields.map((fld, i) => (
-                          <li key={i}>{fld}</li>
+                        {fields.map((field, index) => (
+                          <li key={index}>{field}</li>
                         ))}
                       </ul>
                     </div>
                   )
               )}
             </div>
+
             <div className="modal-actions">
               <button
+                className="confirm-btn"
                 onClick={() => navigate("/maker", { state: { previewData } })}
               >
-                Submit
+                OK
               </button>
               <button
                 className="cancel-btn"
